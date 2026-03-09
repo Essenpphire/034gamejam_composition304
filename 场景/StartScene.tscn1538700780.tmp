@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://b78bksqabmw3p"]
+
+[ext_resource type="PackedScene" uid="uid://clcdosjpbc01e" path="res://场景/Player.tscn" id="1_7xbey"]
+[ext_resource type="PackedScene" uid="uid://c4oao7fptp7sx" path="res://场景/Enemy.tscn" id="2_osrxt"]
+[ext_resource type="Script" uid="uid://ql8qnuyx4miw" path="res://场景/enemy.gd" id="3_3bcld"]
+
+[node name="Game" type="Node2D"]
+
+[node name="Player" parent="." instance=ExtResource("1_7xbey")]
+
+[node name="Enemy" parent="." instance=ExtResource("2_osrxt")]
+position = Vector2(136, 179)
+
+[node name="Enemy2" parent="." instance=ExtResource("2_osrxt")]
+position = Vector2(353, -152)
+
+[node name="Enemy3" parent="." instance=ExtResource("2_osrxt")]
+position = Vector2(-348, -127)
+script = ExtResource("3_3bcld")

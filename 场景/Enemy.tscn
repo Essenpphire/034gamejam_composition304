@@ -1,0 +1,35 @@
+[gd_scene load_steps=6 format=3 uid="uid://c4oao7fptp7sx"]
+
+[ext_resource type="PackedScene" uid="uid://k41nhncrqiwo" path="res://场景/Entity.tscn" id="1_h6s4t"]
+[ext_resource type="Script" uid="uid://mup6qxn6rb48" path="res://脚本/Enemy.gd" id="2_qcp26"]
+[ext_resource type="PackedScene" uid="uid://da25wufaew5up" path="res://场景/HurtDot.tscn" id="3_2pbv7"]
+
+[sub_resource type="PrismMesh" id="PrismMesh_h6s4t"]
+size = Vector3(16, 16, 1)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_qcp26"]
+radius = 32.0
+
+[node name="Enemy" instance=ExtResource("1_h6s4t")]
+script = ExtResource("2_qcp26")
+
+[node name="MeshInstance2D" parent="." index="0"]
+modulate = Color(0.101961, 0.247059, 0.415686, 1)
+z_index = -1
+rotation = 3.14159
+mesh = SubResource("PrismMesh_h6s4t")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." index="1"]
+polygon = PackedVector2Array(8, 8, 0, -8, -8, 8)
+
+[node name="CollisionShape2D" parent="Area2D" index="0"]
+visible = true
+shape = SubResource("CircleShape2D_qcp26")
+
+[node name="HurtDot0" parent="." index="3" instance=ExtResource("3_2pbv7")]
+position = Vector2(3, 4)
+
+[node name="HurtDot1" parent="." index="4" instance=ExtResource("3_2pbv7")]
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]

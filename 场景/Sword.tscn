@@ -1,0 +1,31 @@
+[gd_scene load_steps=5 format=3 uid="uid://c0uc4v1ebi85r"]
+
+[ext_resource type="Script" uid="uid://chodktkwokftg" path="res://脚本/Sword.gd" id="1_jpocr"]
+
+[sub_resource type="PrismMesh" id="PrismMesh_3hdxa"]
+size = Vector3(4, 24, 1)
+
+[sub_resource type="Gradient" id="Gradient_jpocr"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.837662)
+colors = PackedColorArray(0, 0, 0, 1, 0.721569, 0.239216, 0.168627, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_a5tja"]
+gradient = SubResource("Gradient_jpocr")
+
+[node name="RigidBody2D" type="RigidBody2D"]
+collision_layer = 2
+collision_mask = 2
+gravity_scale = 0.0
+script = ExtResource("1_jpocr")
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="."]
+rotation = -3.14159
+mesh = SubResource("PrismMesh_3hdxa")
+texture = SubResource("GradientTexture1D_a5tja")
+
+[node name="CollisionEdge" type="CollisionPolygon2D" parent="."]
+position = Vector2(0, 19)
+polygon = PackedVector2Array(0, -31, -1, -19, 1, -19)
+
+[node name="CollisionBody" type="CollisionPolygon2D" parent="."]

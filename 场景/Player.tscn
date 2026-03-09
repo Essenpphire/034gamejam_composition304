@@ -1,0 +1,54 @@
+[gd_scene load_steps=7 format=3 uid="uid://clcdosjpbc01e"]
+
+[ext_resource type="PackedScene" uid="uid://k41nhncrqiwo" path="res://场景/Entity.tscn" id="1_6h6af"]
+[ext_resource type="Script" uid="uid://bpp448re126cy" path="res://脚本/Player.gd" id="2_kq2c7"]
+[ext_resource type="PackedScene" uid="uid://c0uc4v1ebi85r" path="res://场景/Sword.tscn" id="3_theer"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_kq2c7"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kq2c7"]
+size = Vector2(16, 16)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_kq2c7"]
+radius = 16.0
+
+[node name="Player" instance=ExtResource("1_6h6af")]
+script = ExtResource("2_kq2c7")
+
+[node name="MeshInstance2D" parent="." index="0"]
+mesh = SubResource("QuadMesh_kq2c7")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." index="1"]
+shape = SubResource("RectangleShape2D_kq2c7")
+
+[node name="PinJoint2D" type="PinJoint2D" parent="." index="2"]
+position = Vector2(5, 3)
+rotation = 0.418879
+node_a = NodePath("..")
+node_b = NodePath("Sword")
+
+[node name="Sword" parent="PinJoint2D" index="0" instance=ExtResource("3_theer")]
+z_index = 1
+position = Vector2(4, -9)
+scale = Vector2(1, 1)
+
+[node name="Area2D" parent="." index="3"]
+visible = false
+
+[node name="CollisionShape2D" parent="Area2D" index="0"]
+visible = true
+shape = SubResource("CircleShape2D_kq2c7")
+
+[node name="Camera2D" type="Camera2D" parent="." index="4"]
+zoom = Vector2(2, 2)
+process_callback = 0
+limit_smoothed = true
+position_smoothing_enabled = true
+position_smoothing_speed = 10.0
+drag_horizontal_enabled = true
+drag_vertical_enabled = true
+
+[node name="AttackCD" type="Timer" parent="." index="5"]
+
+[connection signal="timeout" from="AttackCD" to="." method="_on_attack_cd_timeout"]
