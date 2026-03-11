@@ -1,72 +1,101 @@
 # Enemy.gd
 extends Entity
 
-@onready var MeshIns : MeshInstance2D = $MeshInstance2D
 @onready var Collison : CollisionPolygon2D = $CollisionPolygon2D
-@onready var HurtDot0 : Area2D = $HurtDot0
-@onready var HurtDot1 : Area2D = $HurtDot1
+@onready var Joint : PinJoint2D = $PinJoint2D
+@onready var Sword : RigidBody2D = $PinJoint2D/Sword
+@onready var HurtCD : Timer = $HurtCD
+@onready var AttackCD : Timer = $AttackCD
 
 # var Mdt = MeshDataTool.new()
 var target : Node2D = null
-var hitdot_queue : Array = [0, 0]
+var target_in_range : bool = false
+var can_attack : bool = true
 
+## @override 重定义数值
+func _init() -> void:
+	SPEED = 100.0
+	STYLE.hurtdot_normal = Color.GREEN
+
+## @override 就绪
+func _ready() -> void:
+	super._ready()
+	HurtDot0.body_entered.connect(_on_hitdot_body_entered.bind(0))
+	HurtDot0.body_exited.connect(_on_hitdot_body_exited.bind(0))
+	HurtDot1.body_entered.connect(_on_hitdot_body_entered.bind(1))
+	HurtDot1.body_exited.connect(_on_hitdot_body_exited.bind(1))
+	Sword.add_to_group("EnemySword")
+	
+## @override
+func _physics_process(delta: float) -> void:
+	super._physics_process(delta)
+	
 ## @override 自动索敌
 func handleMove() -> void:
 	if target != null:
-		var target_pos : Vector2 = target.position
-
-## 基于三角网格的随机采样
-## @todo 添加距离阈值
-func getRandomPoint() -> Vector2:
-	var tr_vertex : PackedVector2Array = Collison.polygon
-	var n : int = tr_vertex.size() / 3
-	var x : int = randi() % n * 3
-	var p0 = tr_vertex[x]
-	var p1 = tr_vertex[x + 1]
-	var p2 = tr_vertex[x + 2]
-	# 使用重心坐标方法（均匀分布）
-	var r1 : float = sqrt(randf_range(0, 1))
-	var r2 : float = randf_range(0, 1)
-	
-	var point : Vector2 = (1 - r1) * p0 + \
-				r1 * (1 - r2) * p1 + \
-				r1 * r2 * p2
-	return point
-
-func _ready() -> void:
-	HurtDot0.position = getRandomPoint()
-	HurtDot0.body_entered.connect(_on_hitdot_body_entered.bind(0))
-	HurtDot0.body_exited.connect(_on_hitdot_body_exited.bind(0))
-	
-	HurtDot1.position = getRandomPoint()
-	HurtDot1.body_entered.connect(_on_hitdot_body_entered.bind(1))
-	HurtDot1.body_exited.connect(_on_hitdot_body_exited.bind(1))
+		var s = target.global_position - self.global_position
+		s = s.normalized()
+		self.transform.x = Vector2(s.x, 0)
+		self.velocity.x = s.x * SPEED
+	else:
+		self.velocity.x = move_toward(self.velocity.x, 0, 1)
+		
+## 敌人攻击
+func handleAttack() -> void:
+	if target and can_attack and target_in_range:
+		can_attack = false
+		AttackCD.start()
+		# 创建补间
+		var tween : Tween = create_tween()
+		tween.set_ease(Tween.EASE_IN_OUT)
+		# tween.set_trans(Tween.TRANS_SPRING)
+		tween.tween_property(Joint, "rotation_degrees", -90, 0.1)
+		tween.tween_property(Joint, "rotation_degrees", 180, 0.1)
+		tween.tween_property(Joint, "rotation_degrees", 60, 0.1)
+		# tween.tween_callback(func(): can_attack = true)
 
 ## 判定点回调 - 剑砍入
 func _on_hitdot_body_entered(body : Node2D, idx : int) -> void:
-	if body.is_in_group("Sword"):
-		print(hitdot_queue)
-		hitdot_queue[idx] = 1
-		if hitdot_queue[0] && hitdot_queue[1]:
+	if body.is_in_group("PlayerSword"):
+		print(hurtdot_queue)
+		hurtdot_queue[idx] = 1
+		if hurtdot_queue[0] && hurtdot_queue[1]:
 			print("awsl")
+			is_dead = true
+			self.transform.x = Vector2(1, 0)
+			AttackCD.stop()
+			Sword.freeze = false
+			await get_tree().create_timer(1.0).timeout
 			self.queue_free()
 		
 ## 判定点回调 - 剑离开
 func _on_hitdot_body_exited(body : Node2D, idx : int) -> void:
-	if body.is_in_group("Sword"):
-		hitdot_queue[idx] = 0
+	if body.is_in_group("PlayerSword"):
+		print("计时开始")
+		HurtCD.start()
 
-func _draw() -> void:
-	draw_circle(HurtDot0.position, 1, Color.RED)
-	draw_circle(HurtDot1.position, 1, Color.RED)
+## 受伤间隔定时器
+func _on_hurt_cd_timeout() -> void:
+	#hurtdot_queue.resize(2)
+	if not is_dead:
+		hurtdot_queue.fill(0)
 
-## @override
-func _physics_process(delta: float) -> void:
-	super._physics_process(delta)
-	queue_redraw()
+## 攻击冷却定时器
+func _on_attack_cd_timeout() -> void:
+	can_attack = true
 
-func _on_area_2d_body_entered(body: Node2D) -> void:
-	target = body
+func _on_detection_body_entered(body: Node2D) -> void:
+	if body.is_in_group("Player"):
+		target = body
+		
+func _on_detection_body_exited(body: Node2D) -> void:
+	if body.is_in_group("Player"):
+		target = null
 
-func _on_area_2d_body_exited(body: Node2D) -> void:
-	target = null
+func _on_attack_body_entered(body: Node2D) -> void:
+	if body.is_in_group("Player"):
+		target_in_range = true
+
+func _on_attack_body_exited(body: Node2D) -> void:
+	if body.is_in_group("Player"):
+		target_in_range = false

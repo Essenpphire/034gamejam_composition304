@@ -2,12 +2,10 @@
 
 [ext_resource type="PackedScene" uid="uid://k41nhncrqiwo" path="res://场景/Entity.tscn" id="1_6h6af"]
 [ext_resource type="Script" uid="uid://bpp448re126cy" path="res://脚本/Player.gd" id="2_kq2c7"]
-[ext_resource type="PackedScene" uid="uid://c0uc4v1ebi85r" path="res://场景/Sword.tscn" id="3_theer"]
+[ext_resource type="PackedScene" uid="uid://bglwf8b88qvwt" path="res://场景/Sword.tscn" id="3_theer"]
+[ext_resource type="PackedScene" uid="uid://da25wufaew5up" path="res://场景/HurtDot.tscn" id="4_5k4nn"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_kq2c7"]
-size = Vector2(16, 16)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_kq2c7"]
 size = Vector2(16, 16)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_kq2c7"]
@@ -17,10 +15,11 @@ radius = 16.0
 script = ExtResource("2_kq2c7")
 
 [node name="MeshInstance2D" parent="." index="0"]
+modulate = Color(0.101961, 0.247059, 0.415686, 1)
 mesh = SubResource("QuadMesh_kq2c7")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." index="1"]
-shape = SubResource("RectangleShape2D_kq2c7")
+[node name="Collision" type="CollisionPolygon2D" parent="." index="1"]
+polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 
 [node name="PinJoint2D" type="PinJoint2D" parent="." index="2"]
 position = Vector2(5, 3)
@@ -29,9 +28,9 @@ node_a = NodePath("..")
 node_b = NodePath("Sword")
 
 [node name="Sword" parent="PinJoint2D" index="0" instance=ExtResource("3_theer")]
-z_index = 1
-position = Vector2(4, -9)
-scale = Vector2(1, 1)
+position = Vector2(-0.00644755, -9.84886)
+freeze = true
+freeze_mode = 1
 
 [node name="Area2D" parent="." index="3"]
 visible = false
@@ -40,8 +39,14 @@ visible = false
 visible = true
 shape = SubResource("CircleShape2D_kq2c7")
 
-[node name="Camera2D" type="Camera2D" parent="." index="4"]
-zoom = Vector2(2, 2)
+[node name="HurtDot0" parent="." index="4" instance=ExtResource("4_5k4nn")]
+position = Vector2(-7, 5)
+
+[node name="HurtDot1" parent="." index="5" instance=ExtResource("4_5k4nn")]
+position = Vector2(-2, -4)
+
+[node name="Camera2D" type="Camera2D" parent="." index="6"]
+zoom = Vector2(3, 3)
 process_callback = 0
 limit_smoothed = true
 position_smoothing_enabled = true
@@ -49,6 +54,10 @@ position_smoothing_speed = 10.0
 drag_horizontal_enabled = true
 drag_vertical_enabled = true
 
-[node name="AttackCD" type="Timer" parent="." index="5"]
+[node name="AttackCD" type="Timer" parent="." index="7"]
+
+[node name="HurtCD" type="Timer" parent="." index="8"]
+wait_time = 0.5
 
 [connection signal="timeout" from="AttackCD" to="." method="_on_attack_cd_timeout"]
+[connection signal="timeout" from="HurtCD" to="." method="_on_hurt_cd_timeout"]

@@ -4,5 +4,5 @@ extends RigidBody2D
 
 #@onready var MeshIns : MeshInstance2D = $MeshInstance2D
 
-func _ready() -> void:
-	self.add_to_group("Sword")
+#func _ready() -> void:
+	#self.add_to_group("Sword")
