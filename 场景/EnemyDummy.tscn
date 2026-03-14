@@ -1,0 +1,103 @@
+[gd_scene load_steps=5 format=3 uid="uid://d2mfaoe0effwx"]
+
+[ext_resource type="PrismMesh" uid="uid://cousalfimhuk8" path="res://资源/Triangle.tres" id="1_u586x"]
+[ext_resource type="PackedScene" uid="uid://da25wufaew5up" path="res://场景/HurtDot.tscn" id="2_2yuoi"]
+
+[sub_resource type="GDScript" id="GDScript_u586x"]
+script/source = "# Enemy.gd
+extends Entity
+
+@onready var HurtCD : Timer = $HurtCD
+
+## @override 触发死亡函数
+func commitDie() -> void:
+	if is_dead:
+		return
+	is_dead = true
+	# 拜拜碰撞
+	Collision.queue_free()
+	# 死亡特效，Particle是对的
+	$DeathParticle.emitting = true
+	# 清点
+	queue_redraw()
+	var _dead_tween = create_tween()
+	_dead_tween.tween_property(Body, \"modulate:a\", 0, 0.1)
+
+## @override 重定义数值
+func _init() -> void:
+	STYLE.hurtdot_normal = Color.GOLD
+
+## @rewrite 就绪
+# 为了方便演示，改成固定判定点了
+func _ready() -> void:
+	$DeathParticle.emitting = false
+	MeshIns.z_index = -1
+	HurtDot0.body_entered.connect(_on_hitdot_body_entered.bind(0))
+	HurtDot0.body_exited.connect(_on_hitdot_body_exited.bind(0))
+	HurtDot1.body_entered.connect(_on_hitdot_body_entered.bind(1))
+	HurtDot1.body_exited.connect(_on_hitdot_body_exited.bind(1))
+
+## 判定点回调 - 剑砍入
+func _on_hitdot_body_entered(body : Node2D, idx : int) -> void:
+	if body.is_in_group(\"PlayerSword\"):
+		print(hurtdot_queue)
+		hurtdot_queue[idx] = 1
+		if hurtdot_queue[0] && hurtdot_queue[1]:
+			commitDie()
+		
+## 判定点回调 - 剑离开
+func _on_hitdot_body_exited(body : Node2D, idx : int) -> void:
+	if body.is_in_group(\"PlayerSword\"):
+		HurtCD.start()
+
+## 受伤间隔定时器
+func _on_hurt_cd_timeout() -> void:
+	#hurtdot_queue.resize(2)
+	if not is_dead:
+		hurtdot_queue.fill(0)
+"
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_uyjn0"]
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 20.0
+initial_velocity_min = 50.0
+initial_velocity_max = 100.0
+gravity = Vector3(0, 980, 0)
+scale_min = 10.0
+scale_max = 10.0
+color = Color(0.721569, 0.239216, 0.168627, 1)
+
+[node name="EnemyDummy" type="CharacterBody2D"]
+script = SubResource("GDScript_u586x")
+
+[node name="Body" type="Node2D" parent="."]
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="Body"]
+modulate = Color(0.721569, 0.239216, 0.168627, 1)
+rotation = 3.14159
+mesh = ExtResource("1_u586x")
+
+[node name="HurtDot0" parent="Body" instance=ExtResource("2_2yuoi")]
+position = Vector2(-5, 5)
+
+[node name="HurtDot1" parent="Body" instance=ExtResource("2_2yuoi")]
+position = Vector2(-1, 1)
+
+[node name="Collision" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PackedVector2Array(8, 8, 0, -8, -8, 8)
+
+[node name="HurtCD" type="Timer" parent="."]
+wait_time = 0.5
+
+[node name="DeathParticle" type="GPUParticles2D" parent="."]
+position = Vector2(0, -1)
+emitting = false
+amount = 30
+lifetime = 5.0
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_uyjn0")
+
+[connection signal="timeout" from="HurtCD" to="." method="_on_hurt_cd_timeout"]

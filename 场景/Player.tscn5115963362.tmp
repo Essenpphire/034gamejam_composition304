@@ -1,0 +1,52 @@
+[gd_scene load_steps=6 format=3 uid="uid://cj5usopwhfvn4"]
+
+[ext_resource type="Script" uid="uid://bpp448re126cy" path="res://脚本/Player.gd" id="2_kq2c7"]
+[ext_resource type="PackedScene" uid="uid://bglwf8b88qvwt" path="res://场景/Sword.tscn" id="3_theer"]
+[ext_resource type="PackedScene" uid="uid://da25wufaew5up" path="res://场景/HurtDot.tscn" id="4_5k4nn"]
+[ext_resource type="PhysicsMaterial" uid="uid://bbvcta7nwoao7" path="res://资源/SwordMat.tres" id="4_y455k"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_5k4nn"]
+size = Vector2(16, 16)
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("2_kq2c7")
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="."]
+modulate = Color(0.101961, 0.247059, 0.415686, 1)
+rotation = 3.14159
+mesh = SubResource("QuadMesh_5k4nn")
+
+[node name="Collision" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+
+[node name="PinJoint2D" type="PinJoint2D" parent="."]
+position = Vector2(5, 3)
+node_a = NodePath("..")
+node_b = NodePath("Sword")
+
+[node name="Sword" parent="PinJoint2D" instance=ExtResource("3_theer")]
+position = Vector2(-0.00644684, -9.84886)
+physics_material_override = ExtResource("4_y455k")
+center_of_mass_mode = 1
+inertia = 100.0
+freeze_mode = 1
+
+[node name="HurtDot0" parent="." instance=ExtResource("4_5k4nn")]
+position = Vector2(-7, 5)
+
+[node name="HurtDot1" parent="." instance=ExtResource("4_5k4nn")]
+position = Vector2(-2, -4)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+visible = false
+zoom = Vector2(3, 3)
+process_callback = 0
+limit_smoothed = true
+position_smoothing_enabled = true
+position_smoothing_speed = 10.0
+drag_horizontal_enabled = true
+drag_vertical_enabled = true
+
+[node name="HurtCD" type="Timer" parent="."]
+wait_time = 0.5

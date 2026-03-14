@@ -1,17 +1,20 @@
-[gd_scene load_steps=6 format=3 uid="uid://bglwf8b88qvwt"]
+[gd_scene load_steps=7 format=3 uid="uid://bglwf8b88qvwt"]
 
 [ext_resource type="Script" uid="uid://chodktkwokftg" path="res://脚本/Sword.gd" id="1_jpocr"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_jpocr"]
+bounce = 0.1
 
 [sub_resource type="PrismMesh" id="PrismMesh_3hdxa"]
 size = Vector3(4.8, 24, 1)
 
-[sub_resource type="Gradient" id="Gradient_kq2c7"]
+[sub_resource type="Gradient" id="Gradient_jpocr"]
 interpolation_mode = 1
 offsets = PackedFloat32Array(0, 0.837662)
 colors = PackedColorArray(0, 0, 0, 1, 0.721569, 0.239216, 0.168627, 1)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_jpocr"]
-gradient = SubResource("Gradient_kq2c7")
+gradient = SubResource("Gradient_jpocr")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jpocr"]
 size = Vector2(6, 24)
@@ -19,6 +22,9 @@ size = Vector2(6, 24)
 [node name="Sword" type="RigidBody2D"]
 collision_layer = 2
 collision_mask = 2
+mass = 0.2
+physics_material_override = SubResource("PhysicsMaterial_jpocr")
+gravity_scale = 0.0
 script = ExtResource("1_jpocr")
 
 [node name="MeshInstance2D" type="MeshInstance2D" parent="."]
@@ -28,3 +34,5 @@ texture = SubResource("GradientTexture1D_jpocr")
 
 [node name="SwordBody" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_jpocr")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

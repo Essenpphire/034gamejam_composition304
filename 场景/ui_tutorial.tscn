@@ -1,0 +1,279 @@
+[gd_scene load_steps=13 format=3 uid="uid://c1kd5xarbr8ph"]
+
+[ext_resource type="StyleBox" uid="uid://dj5jk16v6eypu" path="res://资源/stylebox_round_corlor.tres" id="1_3t7fj"]
+[ext_resource type="PackedScene" uid="uid://d2mfaoe0effwx" path="res://场景/EnemyDummy.tscn" id="2_aycx0"]
+
+[sub_resource type="GDScript" id="GDScript_aycx0"]
+script/source = "extends CanvasLayer
+
+@onready var A : Panel = $Control/Keyboard/A
+@onready var D : Panel = $Control/Keyboard/D
+@onready var Space : Panel = $Control/Keyboard/Space
+@onready var Left : Panel = $Control/Mouse/Left
+
+@onready var Player : MeshInstance2D = $MoveTutor/Player
+@onready var Sword : CharacterBody2D = $BattleTutor/SwordFake
+
+@export var key_press_time : float = 1
+
+## 打开/关闭教程
+func toggleTutor(target : Node2D) -> void:
+	if target.modulate.a < 0.5:
+		create_tween().tween_property(target, \"modulate:a\", 1.0, 0.5)
+	else:
+		create_tween().tween_property(target, \"modulate:a\", 0.0, 0.5)
+
+## 模拟按键
+func pressKey(key : Panel, t : float = key_press_time) -> void:
+	create_tween().tween_property(key, \"modulate\", Color.GREEN, 0.1)
+	await get_tree().create_timer(t).timeout
+	create_tween().tween_property(key, \"modulate\", Color.WHITE, 0.1)
+	
+## 玩家移动
+func playerMove(dist : float) -> void:
+	create_tween().tween_property(Player, \"position:x\", Player.position.x + dist, key_press_time)
+
+## 玩家跳跃
+func playerJump() -> void:
+	var tween = create_tween()
+	tween.set_parallel(false)
+	
+	var jump_height = 128
+	var start_y = Player.position.y
+	var peak_y = start_y - jump_height
+	
+	tween.tween_property(Player, \"position:y\", peak_y, 1.0).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(Player, \"position:y\", start_y, 0.5).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
+
+## 玩家斩击
+func playerAttack() -> void:
+	var tween : Tween = create_tween()
+	tween.set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(Sword, \"rotation_degrees\", -90, 0.5)
+	tween.tween_property(Sword, \"rotation_degrees\", 180, 0.5)
+	tween.tween_property(Sword, \"rotation_degrees\", 0, 0.5)
+
+func _ready() -> void:
+	Sword.add_to_group(\"PlayerSword\")
+	$Control.modulate.a = 0.0
+	$BattleTutor/Arrow.modulate.a = 0.0
+	$MoveTutor.modulate.a = 0.0
+	$BattleTutor.modulate.a = 0.0
+	
+	await get_tree().create_timer(1.0).timeout
+	create_tween().tween_property($Control, \"modulate:a\", 1.0, 0.5)
+	await get_tree().create_timer(1.0).timeout
+	toggleTutor($MoveTutor)
+	## 移动
+	await get_tree().create_timer(1.0).timeout
+	pressKey(D)
+	playerMove(100.0)
+	await get_tree().create_timer(2.0).timeout
+	pressKey(A)
+	playerMove(-100.0)
+	await get_tree().create_timer(2.0).timeout
+	pressKey(Space, 0.5)
+	playerJump()
+	await get_tree().create_timer(2.0).timeout
+	toggleTutor($MoveTutor)
+	
+	# 攻击
+	await get_tree().create_timer(1.0).timeout
+	toggleTutor($BattleTutor)
+	toggleTutor($BattleTutor/Arrow)
+	await get_tree().create_timer(1.0).timeout
+	pressKey(D)
+	pressKey(Left)
+	playerAttack()
+	toggleTutor($BattleTutor/Arrow)
+	await get_tree().create_timer(2.0).timeout
+	pressKey(D)
+	create_tween().tween_property(Sword, \"position:x\", Sword.position.x + 50, key_press_time)
+	await get_tree().create_timer(1.0).timeout
+	pressKey(D)
+	pressKey(Left)
+	playerAttack()
+	await get_tree().create_timer(1.0).timeout
+	toggleTutor($BattleTutor)
+	create_tween().tween_property($Control, \"modulate:a\", 0.0, 0.5)
+	GameManager.is_tutor_op_played = true
+"
+
+[sub_resource type="QuadMesh" id="QuadMesh_aycx0"]
+size = Vector2(48, 48)
+
+[sub_resource type="QuadMesh" id="QuadMesh_3t7fj"]
+size = Vector2(250, 20)
+
+[sub_resource type="QuadMesh" id="QuadMesh_t54hj"]
+size = Vector2(400, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jbdaa"]
+size = Vector2(800, 10)
+
+[sub_resource type="PrismMesh" id="PrismMesh_aycx0"]
+size = Vector3(14.4, 72, 1)
+
+[sub_resource type="Gradient" id="Gradient_jpocr"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.837662)
+colors = PackedColorArray(0, 0, 0, 1, 0.721569, 0.239216, 0.168627, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_t54hj"]
+gradient = SubResource("Gradient_jpocr")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_18ygl"]
+size = Vector2(14.4, 72)
+
+[sub_resource type="PrismMesh" id="PrismMesh_t54hj"]
+size = Vector3(16, 128, 1)
+
+[node name="CanvasLayer" type="CanvasLayer"]
+script = SubResource("GDScript_aycx0")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1152.0
+offset_bottom = 648.0
+
+[node name="Keyboard" type="Control" parent="Control"]
+anchors_preset = 0
+offset_left = 304.0
+offset_top = 328.0
+offset_right = 304.0
+offset_bottom = 328.0
+
+[node name="W" type="Panel" parent="Control/Keyboard"]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
+theme_override_styles/panel = ExtResource("1_3t7fj")
+
+[node name="S" type="Panel" parent="Control/Keyboard"]
+layout_mode = 0
+offset_top = 72.0
+offset_right = 64.0
+offset_bottom = 136.0
+theme_override_styles/panel = ExtResource("1_3t7fj")
+
+[node name="A" type="Panel" parent="Control/Keyboard"]
+layout_mode = 0
+offset_left = -72.0
+offset_top = 72.0
+offset_right = -8.0
+offset_bottom = 136.0
+theme_override_styles/panel = ExtResource("1_3t7fj")
+
+[node name="D" type="Panel" parent="Control/Keyboard"]
+layout_mode = 0
+offset_left = 72.0
+offset_top = 72.0
+offset_right = 136.0
+offset_bottom = 136.0
+theme_override_styles/panel = ExtResource("1_3t7fj")
+
+[node name="Shift" type="Panel" parent="Control/Keyboard"]
+layout_mode = 0
+offset_left = -200.0
+offset_top = 152.0
+offset_right = -40.0
+offset_bottom = 216.0
+theme_override_styles/panel = ExtResource("1_3t7fj")
+
+[node name="Space" type="Panel" parent="Control/Keyboard"]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 232.0
+offset_right = 520.0
+offset_bottom = 296.0
+theme_override_styles/panel = ExtResource("1_3t7fj")
+
+[node name="Mouse" type="Control" parent="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 112.0
+offset_top = 152.0
+offset_right = 112.0
+offset_bottom = 152.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Left" type="Panel" parent="Control/Mouse"]
+layout_mode = 0
+offset_left = 816.0
+offset_top = 152.0
+offset_right = 880.0
+offset_bottom = 248.0
+theme_override_styles/panel = ExtResource("1_3t7fj")
+
+[node name="Right" type="Panel" parent="Control/Mouse"]
+layout_mode = 0
+offset_left = 896.0
+offset_top = 152.0
+offset_right = 960.0
+offset_bottom = 248.0
+theme_override_styles/panel = ExtResource("1_3t7fj")
+
+[node name="Bottom" type="Panel" parent="Control/Mouse"]
+layout_mode = 0
+offset_left = 816.0
+offset_top = 264.0
+offset_right = 960.0
+offset_bottom = 392.0
+theme_override_styles/panel = ExtResource("1_3t7fj")
+
+[node name="MoveTutor" type="Node2D" parent="."]
+position = Vector2(-16, 48)
+
+[node name="Player" type="MeshInstance2D" parent="MoveTutor"]
+modulate = Color(0.101961, 0.247059, 0.415686, 1)
+position = Vector2(496, 142)
+mesh = SubResource("QuadMesh_aycx0")
+
+[node name="Platform" type="MeshInstance2D" parent="MoveTutor"]
+modulate = Color(0.328165, 0.635204, 0.867397, 1)
+position = Vector2(496, 176)
+mesh = SubResource("QuadMesh_3t7fj")
+
+[node name="BattleTutor" type="Node2D" parent="."]
+position = Vector2(56, -192)
+
+[node name="EnemyDummy" parent="BattleTutor" instance=ExtResource("2_aycx0")]
+position = Vector2(616, 432)
+scale = Vector2(4, 4)
+
+[node name="Platform" type="StaticBody2D" parent="BattleTutor"]
+position = Vector2(576, 472)
+collision_layer = 3
+
+[node name="Mesh" type="MeshInstance2D" parent="BattleTutor/Platform"]
+modulate = Color(0.328165, 0.635204, 0.867397, 1)
+mesh = SubResource("QuadMesh_t54hj")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BattleTutor/Platform"]
+visible = false
+shape = SubResource("RectangleShape2D_jbdaa")
+
+[node name="SwordFake" type="CharacterBody2D" parent="BattleTutor"]
+position = Vector2(529, 462)
+collision_layer = 2
+collision_mask = 2
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="BattleTutor/SwordFake"]
+position = Vector2(0, -35)
+rotation = -3.14159
+mesh = SubResource("PrismMesh_aycx0")
+texture = SubResource("GradientTexture1D_t54hj")
+
+[node name="SwordBody" type="CollisionShape2D" parent="BattleTutor/SwordFake"]
+position = Vector2(0, -35)
+shape = SubResource("RectangleShape2D_18ygl")
+
+[node name="Arrow" type="MeshInstance2D" parent="BattleTutor"]
+modulate = Color(0.721569, 0.239216, 0.168627, 1)
+position = Vector2(549, 496)
+rotation = -2.35619
+mesh = SubResource("PrismMesh_t54hj")

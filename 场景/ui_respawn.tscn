@@ -1,0 +1,126 @@
+[gd_scene load_steps=3 format=3 uid="uid://clohc632efwgv"]
+
+[ext_resource type="StyleBox" uid="uid://dj5jk16v6eypu" path="res://资源/stylebox_round_corlor.tres" id="1_wwcpk"]
+
+[sub_resource type="GDScript" id="GDScript_wwcpk"]
+script/source = "extends CanvasLayer
+
+## 模拟按键
+func pressKey(key : Panel, t : float = 1.0) -> void:
+	create_tween().tween_property(key, \"modulate\", Color.GREEN, 0.1)
+	await get_tree().create_timer(t).timeout
+	create_tween().tween_property(key, \"modulate\", Color.WHITE, 0.1)
+
+func _ready() -> void:
+	$Control.modulate.a = 0.0
+	await get_tree().create_timer(1.0).timeout
+	
+	create_tween().tween_property($Control, \"modulate:a\", 1.0, 0.5)
+	await get_tree().create_timer(0.5).timeout
+	pressKey($Control/Keyboard/Space)
+	await get_tree().create_timer(2.0).timeout
+	pressKey($Control/Keyboard/Space)
+	await get_tree().create_timer(2.0).timeout
+	create_tween().tween_property($Control, \"modulate:a\", 0.0, 0.5)
+	
+	await get_tree().create_timer(1.0).timeout
+	create_tween().tween_property($Control, \"modulate:a\", 0.0, 0.5)
+	GameManager.is_tutor_death_played = true
+"
+
+[node name="CanvasLayer" type="CanvasLayer"]
+script = SubResource("GDScript_wwcpk")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1152.0
+offset_bottom = 648.0
+
+[node name="Keyboard" type="Control" parent="Control"]
+anchors_preset = 0
+offset_left = 304.0
+offset_top = 328.0
+offset_right = 304.0
+offset_bottom = 328.0
+
+[node name="W" type="Panel" parent="Control/Keyboard"]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
+theme_override_styles/panel = ExtResource("1_wwcpk")
+
+[node name="S" type="Panel" parent="Control/Keyboard"]
+layout_mode = 0
+offset_top = 72.0
+offset_right = 64.0
+offset_bottom = 136.0
+theme_override_styles/panel = ExtResource("1_wwcpk")
+
+[node name="A" type="Panel" parent="Control/Keyboard"]
+layout_mode = 0
+offset_left = -72.0
+offset_top = 72.0
+offset_right = -8.0
+offset_bottom = 136.0
+theme_override_styles/panel = ExtResource("1_wwcpk")
+
+[node name="D" type="Panel" parent="Control/Keyboard"]
+layout_mode = 0
+offset_left = 72.0
+offset_top = 72.0
+offset_right = 136.0
+offset_bottom = 136.0
+theme_override_styles/panel = ExtResource("1_wwcpk")
+
+[node name="Shift" type="Panel" parent="Control/Keyboard"]
+layout_mode = 0
+offset_left = -200.0
+offset_top = 152.0
+offset_right = -40.0
+offset_bottom = 216.0
+theme_override_styles/panel = ExtResource("1_wwcpk")
+
+[node name="Space" type="Panel" parent="Control/Keyboard"]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 232.0
+offset_right = 520.0
+offset_bottom = 296.0
+theme_override_styles/panel = ExtResource("1_wwcpk")
+
+[node name="Mouse" type="Control" parent="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 112.0
+offset_top = 152.0
+offset_right = 112.0
+offset_bottom = 152.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Left" type="Panel" parent="Control/Mouse"]
+layout_mode = 0
+offset_left = 816.0
+offset_top = 152.0
+offset_right = 880.0
+offset_bottom = 248.0
+theme_override_styles/panel = ExtResource("1_wwcpk")
+
+[node name="Right" type="Panel" parent="Control/Mouse"]
+layout_mode = 0
+offset_left = 896.0
+offset_top = 152.0
+offset_right = 960.0
+offset_bottom = 248.0
+theme_override_styles/panel = ExtResource("1_wwcpk")
+
+[node name="Bottom" type="Panel" parent="Control/Mouse"]
+layout_mode = 0
+offset_left = 816.0
+offset_top = 264.0
+offset_right = 960.0
+offset_bottom = 392.0
+theme_override_styles/panel = ExtResource("1_wwcpk")

@@ -1,0 +1,127 @@
+[gd_scene load_steps=9 format=3 uid="uid://c1jpyugwof4sp"]
+
+[ext_resource type="Script" uid="uid://didn480h127oo" path="res://资源/character_body_2d.gd" id="1_xcn63"]
+
+[sub_resource type="GDScript" id="GDScript_xcn63"]
+resource_name = "zhandou!"
+script/source = "extends Node2D
+
+@onready var Player : CharacterBody2D = $Player
+@onready var Enemy : RigidBody2D = $Enemy
+@onready var Spring : DampedSpringJoint2D = $DampedSpringJoint2D
+## 弹簧失效阈值
+@export var spring_muda_thres : float = 64.0
+
+var spring_dist : float = 0.0
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	pass # Replace with function body.
+
+func _draw() -> void:
+	if spring_dist <= spring_muda_thres:
+		draw_line(Player.position, Enemy.position, Color.RED)
+
+func _physics_process(delta: float) -> void:
+	spring_dist = (Player.position - Enemy.position).length()
+	if spring_dist <= spring_muda_thres:
+		Spring.node_b = \"\"
+	else:
+		Spring.node_b = \"../Enemy\"
+	queue_redraw()
+"
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_i5tpr"]
+
+[sub_resource type="GDScript" id="GDScript_8vwke"]
+script/source = "extends RigidBody2D
+
+
+func _physics_process(delta: float) -> void:
+	if self.position.y > 1000:
+		self.position.y = -200
+"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8vwke"]
+size = Vector2(16, 53)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xcn63"]
+size = Vector2(351, 8)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_xcn63"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_f8dnb"]
+size = Vector2(80, 10)
+
+[node name="Node2D" type="Node2D"]
+script = SubResource("GDScript_xcn63")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(2, 2)
+
+[node name="DampedSpringJoint2D" type="DampedSpringJoint2D" parent="."]
+rotation = 1.19861
+scale = Vector2(1, 1.927)
+node_a = NodePath("../Player")
+node_b = NodePath("../Enemy")
+bias = 0.5
+disable_collision = false
+rest_length = 40.0
+
+[node name="Player" type="CharacterBody2D" parent="."]
+script = ExtResource("1_xcn63")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("CircleShape2D_i5tpr")
+
+[node name="Enemy" type="RigidBody2D" parent="."]
+position = Vector2(-93, 34)
+mass = 5.0
+script = SubResource("GDScript_8vwke")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Enemy"]
+position = Vector2(4, 0)
+shape = SubResource("CircleShape2D_i5tpr")
+debug_color = Color(1, 0, 0, 0.419608)
+
+[node name="Platform" type="StaticBody2D" parent="."]
+position = Vector2(-26, 92)
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Platform"]
+position = Vector2(170, -38)
+shape = SubResource("RectangleShape2D_8vwke")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform"]
+position = Vector2(2, -8)
+shape = SubResource("RectangleShape2D_xcn63")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Platform"]
+position = Vector2(-166, -38.5)
+shape = SubResource("RectangleShape2D_8vwke")
+
+[node name="PlatformDynamic" type="Node2D" parent="."]
+
+[node name="PinJoint2D" type="PinJoint2D" parent="PlatformDynamic"]
+position = Vector2(48, 24)
+node_a = NodePath("../Fixation")
+node_b = NodePath("../Platform")
+
+[node name="Fixation" type="StaticBody2D" parent="PlatformDynamic"]
+position = Vector2(48, 24)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlatformDynamic/Fixation"]
+shape = SubResource("CircleShape2D_xcn63")
+debug_color = Color(0.572549, 0.6, 0.701961, 0.419608)
+
+[node name="Platform2" type="StaticBody2D" parent="PlatformDynamic"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlatformDynamic/Platform2"]
+position = Vector2(200, 152)
+shape = SubResource("RectangleShape2D_f8dnb")
+
+[node name="Platform" type="RigidBody2D" parent="PlatformDynamic"]
+mass = 0.05
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlatformDynamic/Platform"]
+position = Vector2(88, 24)
+shape = SubResource("RectangleShape2D_f8dnb")

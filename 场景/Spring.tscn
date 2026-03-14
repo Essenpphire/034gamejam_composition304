@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cpjpkomsv1wk0"]
+
+[node name="DampedSpringJoint2D" type="DampedSpringJoint2D"]
+rotation = 1.57079
+scale = Vector2(1, 1.927)
+node_a = NodePath("../Player")
+node_b = NodePath("../Enemy")
+bias = 0.5
+disable_collision = false
+length = 40.0
+rest_length = 40.0
+stiffness = 10.0

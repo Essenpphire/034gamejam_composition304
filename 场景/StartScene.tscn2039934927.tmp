@@ -1,0 +1,96 @@
+[gd_scene load_steps=6 format=3 uid="uid://b78bksqabmw3p"]
+
+[ext_resource type="PackedScene" uid="uid://cpjpkomsv1wk0" path="res://场景/Spring.tscn" id="1_3bcld"]
+[ext_resource type="PackedScene" uid="uid://cj5usopwhfvn4" path="res://场景/Player.tscn" id="1_7xbey"]
+[ext_resource type="PackedScene" uid="uid://8okfnukxiule" path="res://场景/Enemy_rigid.tscn" id="2_eirmd"]
+
+[sub_resource type="GDScript" id="GDScript_osrxt"]
+script/source = "extends Node2D
+
+@onready var Player : CharacterBody2D = $Player
+@onready var Enemy : CharacterBody2D = $Enemy
+@onready var Spring : DampedSpringJoint2D = $DampedSpringJoint2D
+
+## 弹簧失效阈值
+@export var spring_muda_thres : float = 64.0
+
+## 弹簧场景
+#const SPRING_SCENE : PackedScene = preload(\"res://场景/Spring.tscn\")
+
+var spring_dist : float = 0.0
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	pass # Replace with function body.
+
+func _draw() -> void:
+	if Player and Enemy:
+		if spring_dist > spring_muda_thres:
+			draw_line(Player.position, Enemy.position, Color.WHITE, 0.5, true)
+		else:
+			draw_line(Player.position, Enemy.position, Color.RED, 0.5, true)
+
+func _physics_process(delta: float) -> void:
+	#if Player and Enemy:
+		#spring_dist = (Player.position - Enemy.position).length()
+		#if spring_dist <= spring_muda_thres:
+			#Spring.node_b = \"\"
+		#else:
+			#Spring.node_b = \"./Enemy\"
+	
+	queue_redraw()
+"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_eirmd"]
+size = Vector2(1172, 20)
+
+[node name="Game" type="Node2D"]
+script = SubResource("GDScript_osrxt")
+
+[node name="CanvasGroup" type="CanvasGroup" parent="."]
+
+[node name="Line2D" type="Line2D" parent="CanvasGroup"]
+visible = false
+position = Vector2(310, -50)
+points = PackedVector2Array(-178, 966, 1086, -341)
+width = 1.0
+default_color = Color(0, 0, 0, 1)
+
+[node name="Line2D2" type="Line2D" parent="CanvasGroup"]
+visible = false
+position = Vector2(527.591, -243.127)
+scale = Vector2(1.29906, 1.10737)
+points = PackedVector2Array(419.08, 1248.11, -750, 86)
+width = 1.0
+default_color = Color(0, 0, 0, 1)
+
+[node name="Line2D3" type="Line2D" parent="CanvasGroup"]
+visible = false
+position = Vector2(3175, -612)
+scale = Vector2(2.64195, 0.977502)
+points = PackedVector2Array(-1692, 1373, -1168.59, 657.898, -750, 86)
+width = 1.0
+default_color = Color(0, 0, 0, 1)
+
+[node name="Line2D4" type="Line2D" parent="CanvasGroup"]
+visible = false
+position = Vector2(1240, -200)
+points = PackedVector2Array(1391, 821, -750, 86)
+width = 1.0
+default_color = Color(0, 0, 0, 1)
+
+[node name="Player" parent="." instance=ExtResource("1_7xbey")]
+
+[node name="Enemy" parent="." instance=ExtResource("2_eirmd")]
+position = Vector2(-103, 44)
+
+[node name="DampedSpringJoint2D" parent="." instance=ExtResource("1_3bcld")]
+rotation = -3.14159
+
+[node name="Platform" type="StaticBody2D" parent="."]
+collision_layer = 3
+collision_mask = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform"]
+position = Vector2(35, 348)
+shape = SubResource("RectangleShape2D_eirmd")

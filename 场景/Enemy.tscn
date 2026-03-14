@@ -1,11 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://c4oao7fptp7sx"]
+[gd_scene load_steps=9 format=3 uid="uid://c4oao7fptp7sx"]
 
 [ext_resource type="Script" uid="uid://c575kieyvlqie" path="res://脚本/Enemy.gd" id="2_2pbv7"]
+[ext_resource type="PrismMesh" uid="uid://cousalfimhuk8" path="res://资源/Triangle.tres" id="2_o8tw2"]
 [ext_resource type="PackedScene" uid="uid://da25wufaew5up" path="res://场景/HurtDot.tscn" id="3_2pbv7"]
 [ext_resource type="PackedScene" uid="uid://bglwf8b88qvwt" path="res://场景/Sword.tscn" id="3_o8tw2"]
-
-[sub_resource type="PrismMesh" id="PrismMesh_qcp26"]
-size = Vector3(16, 16, 1)
+[ext_resource type="PhysicsMaterial" uid="uid://bbvcta7nwoao7" path="res://资源/SwordMat.tres" id="4_gedn7"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_o8tw2"]
 radius = 21.0
@@ -13,28 +12,50 @@ radius = 21.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_2pbv7"]
 radius = 204.978
 
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_uyjn0"]
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 20.0
+initial_velocity_min = 300.0
+initial_velocity_max = 500.0
+gravity = Vector3(0, 980, 0)
+scale_min = 2.0
+scale_max = 4.0
+color = Color(0.721569, 0.239216, 0.168627, 1)
+
 [node name="Enemy" type="CharacterBody2D"]
 script = ExtResource("2_2pbv7")
 
-[node name="MeshInstance2D" type="MeshInstance2D" parent="."]
-modulate = Color(0.721569, 0.239216, 0.168627, 1)
-z_index = -1
-rotation = 3.14159
-mesh = SubResource("PrismMesh_qcp26")
+[node name="Body" type="Node2D" parent="."]
 
-[node name="Collision" type="CollisionPolygon2D" parent="."]
-polygon = PackedVector2Array(8, 8, 0, -8, -8, 8)
+[node name="MeshInstance2D" type="MeshInstance2D" parent="Body"]
+modulate = Color(0.721569, 0.239216, 0.168627, 1)
+rotation = 3.14159
+mesh = ExtResource("2_o8tw2")
+
+[node name="HurtDot0" parent="Body" instance=ExtResource("3_2pbv7")]
+position = Vector2(3, 4)
+
+[node name="HurtDot1" parent="Body" instance=ExtResource("3_2pbv7")]
 
 [node name="PinJoint2D" type="PinJoint2D" parent="."]
 position = Vector2(5, 3)
 rotation = 0.418879
 node_a = NodePath("..")
 node_b = NodePath("Sword")
+angular_limit_lower = -0.0872665
+angular_limit_upper = 0.0872665
 
 [node name="Sword" parent="PinJoint2D" instance=ExtResource("3_o8tw2")]
-position = Vector2(-0.00644755, -9.84886)
+position = Vector2(-0.00644684, -9.84886)
+mass = 1.0
+physics_material_override = ExtResource("4_gedn7")
 freeze = true
 freeze_mode = 1
+
+[node name="Collision" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PackedVector2Array(8, 8, 0, -8, -8, 8)
 
 [node name="Attack" type="Area2D" parent="."]
 visible = false
@@ -48,15 +69,19 @@ visible = false
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Detection"]
 shape = SubResource("CircleShape2D_2pbv7")
 
-[node name="HurtDot0" parent="." instance=ExtResource("3_2pbv7")]
-position = Vector2(3, 4)
-
-[node name="HurtDot1" parent="." instance=ExtResource("3_2pbv7")]
-
 [node name="HurtCD" type="Timer" parent="."]
 wait_time = 0.5
 
 [node name="AttackCD" type="Timer" parent="."]
+
+[node name="DeathParticle" type="GPUParticles2D" parent="."]
+position = Vector2(0, -1)
+emitting = false
+amount = 30
+lifetime = 3.0
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_uyjn0")
 
 [connection signal="body_entered" from="Attack" to="." method="_on_attack_body_entered"]
 [connection signal="body_exited" from="Attack" to="." method="_on_attack_body_exited"]
@@ -64,3 +89,4 @@ wait_time = 0.5
 [connection signal="body_exited" from="Detection" to="." method="_on_detection_body_exited"]
 [connection signal="timeout" from="HurtCD" to="." method="_on_hurt_cd_timeout"]
 [connection signal="timeout" from="AttackCD" to="." method="_on_attack_cd_timeout"]
+[connection signal="finished" from="DeathParticle" to="." method="_on_death_particle_finished"]

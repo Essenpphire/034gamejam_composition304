@@ -1,63 +1,74 @@
-[gd_scene load_steps=7 format=3 uid="uid://clcdosjpbc01e"]
+[gd_scene load_steps=8 format=3 uid="uid://cj5usopwhfvn4"]
 
-[ext_resource type="PackedScene" uid="uid://k41nhncrqiwo" path="res://场景/Entity.tscn" id="1_6h6af"]
+[ext_resource type="QuadMesh" uid="uid://d1my4dt8linap" path="res://资源/Rect.tres" id="2_76qne"]
 [ext_resource type="Script" uid="uid://bpp448re126cy" path="res://脚本/Player.gd" id="2_kq2c7"]
 [ext_resource type="PackedScene" uid="uid://bglwf8b88qvwt" path="res://场景/Sword.tscn" id="3_theer"]
 [ext_resource type="PackedScene" uid="uid://da25wufaew5up" path="res://场景/HurtDot.tscn" id="4_5k4nn"]
+[ext_resource type="PhysicsMaterial" uid="uid://bbvcta7nwoao7" path="res://资源/SwordMat.tres" id="4_y455k"]
+[ext_resource type="Script" uid="uid://b6hm5al3hvkvh" path="res://脚本/Camera.gd" id="5_y455k"]
 
-[sub_resource type="QuadMesh" id="QuadMesh_kq2c7"]
-size = Vector2(16, 16)
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_5pnku"]
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 20.0
+initial_velocity_min = 300.0
+initial_velocity_max = 500.0
+gravity = Vector3(0, 980, 0)
+scale_min = 2.0
+scale_max = 4.0
+color = Color(0.204573, 0.422134, 0.677181, 1)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_kq2c7"]
-radius = 16.0
-
-[node name="Player" instance=ExtResource("1_6h6af")]
+[node name="Player" type="CharacterBody2D"]
 script = ExtResource("2_kq2c7")
 
-[node name="MeshInstance2D" parent="." index="0"]
+[node name="Body" type="Node2D" parent="."]
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="Body"]
 modulate = Color(0.101961, 0.247059, 0.415686, 1)
-mesh = SubResource("QuadMesh_kq2c7")
+rotation = 3.14159
+mesh = ExtResource("2_76qne")
 
-[node name="Collision" type="CollisionPolygon2D" parent="." index="1"]
-polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+[node name="HurtDot0" parent="Body" instance=ExtResource("4_5k4nn")]
+position = Vector2(-7, 5)
 
-[node name="PinJoint2D" type="PinJoint2D" parent="." index="2"]
-position = Vector2(5, 3)
-rotation = 0.418879
+[node name="HurtDot1" parent="Body" instance=ExtResource("4_5k4nn")]
+position = Vector2(-2, -4)
+
+[node name="PinJoint2D" type="PinJoint2D" parent="."]
+position = Vector2(0, 3)
 node_a = NodePath("..")
 node_b = NodePath("Sword")
 
-[node name="Sword" parent="PinJoint2D" index="0" instance=ExtResource("3_theer")]
-position = Vector2(-0.00644755, -9.84886)
-freeze = true
+[node name="Sword" parent="PinJoint2D" instance=ExtResource("3_theer")]
+position = Vector2(0, -10)
+physics_material_override = ExtResource("4_y455k")
+center_of_mass_mode = 1
+inertia = 100.0
 freeze_mode = 1
 
-[node name="Area2D" parent="." index="3"]
+[node name="Collision" type="CollisionPolygon2D" parent="."]
 visible = false
+polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 
-[node name="CollisionShape2D" parent="Area2D" index="0"]
-visible = true
-shape = SubResource("CircleShape2D_kq2c7")
+[node name="HurtCD" type="Timer" parent="."]
+wait_time = 0.5
 
-[node name="HurtDot0" parent="." index="4" instance=ExtResource("4_5k4nn")]
-position = Vector2(-7, 5)
-
-[node name="HurtDot1" parent="." index="5" instance=ExtResource("4_5k4nn")]
-position = Vector2(-2, -4)
-
-[node name="Camera2D" type="Camera2D" parent="." index="6"]
-zoom = Vector2(3, 3)
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(2.5, 2.5)
 process_callback = 0
 limit_smoothed = true
 position_smoothing_enabled = true
 position_smoothing_speed = 10.0
 drag_horizontal_enabled = true
 drag_vertical_enabled = true
+script = ExtResource("5_y455k")
 
-[node name="AttackCD" type="Timer" parent="." index="7"]
+[node name="DeathParticle" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 30
+lifetime = 5.0
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_5pnku")
 
-[node name="HurtCD" type="Timer" parent="." index="8"]
-wait_time = 0.5
-
-[connection signal="timeout" from="AttackCD" to="." method="_on_attack_cd_timeout"]
 [connection signal="timeout" from="HurtCD" to="." method="_on_hurt_cd_timeout"]

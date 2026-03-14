@@ -1,10 +1,14 @@
 extends CharacterBody2D
 class_name Entity
 
-@onready var MeshIns : MeshInstance2D = $MeshInstance2D
+@onready var Body : Node2D = $Body
 @onready var Collision : CollisionPolygon2D = $Collision
-@onready var HurtDot0 : Area2D = $HurtDot0
-@onready var HurtDot1 : Area2D = $HurtDot1
+@onready var MeshIns : MeshInstance2D = $Body/MeshInstance2D
+@onready var HurtDot0 : Area2D = $Body/HurtDot0
+@onready var HurtDot1 : Area2D = $Body/HurtDot1
+@onready var Sword : RigidBody2D = $PinJoint2D/Sword
+## 关节角度限制是核心，朝右-20 30 朝左-130 20
+@onready var Joint : PinJoint2D = $PinJoint2D
 
 var SPEED : float = 300.0
 var JUMP_VELOCITY = -400.0
@@ -13,7 +17,9 @@ var STYLE : Dictionary = {
 	hurtdot_hurt = Color.GRAY
 }
 var hurtdot_queue : Array = [0, 0]
+## 不要显示修改is_dead，改用commitDie
 var is_dead : bool = false
+var prev_on_floor : bool = true
 
 ## 基于三角网格的随机采样
 ## @todo 添加距离阈值
@@ -33,14 +39,41 @@ func getRandomPoint() -> Vector2:
 				r1 * r2 * p2
 	return point
 
+## 触发死亡函数
+func commitDie() -> void:
+	if is_dead:
+		return
+	is_dead = true
+	# 关节解绑
+	Joint.node_a = "" 
+	# 剑落地
+	Sword.set_deferred("freeze", false)
+	Sword.gravity_scale = 1.0
+	Sword.apply_force(get_gravity())
+	# 拜拜碰撞
+	Collision.queue_free()
+	# 死亡特效，Particle是对的
+	$DeathParticle.emitting = true
+	# 清点
+	queue_redraw()
+	var _dead_tween = create_tween()
+	_dead_tween.tween_property(Body, "modulate:a", 0, 0.1)
+
+## 落地回调函数
+func handleHitFloor() -> void:
+	pass
+
 ## 就绪
 func _ready() -> void:
+	$DeathParticle.emitting = false
 	MeshIns.z_index = -1
 	HurtDot0.position = getRandomPoint()
 	HurtDot1.position = getRandomPoint()
 
 ## 绘图虚函数
 func _draw() -> void:
+	if is_dead:
+		return
 	if hurtdot_queue[0]:
 		draw_circle(HurtDot0.position, 1, STYLE.hurtdot_hurt)
 	else:
@@ -55,17 +88,23 @@ func _draw() -> void:
 
 ## 物理帧更新函数
 func _physics_process(delta: float) -> void:
+	if prev_on_floor != is_on_floor() and is_on_floor():
+		print(self.name + "落地！") # do sth...
+		handleHitFloor()
+	prev_on_floor = is_on_floor()
 	if not is_on_floor():
 		velocity += get_gravity() * delta
 	if not is_dead:
 		handleMove()
 		handleAttack()
 		move_and_slide()
-	queue_redraw()
+		queue_redraw()
 
-## 实体移动虚函数
+## 实体移动函数
 func handleMove() -> void:
-	pass	
+	if self.position.y > 800:
+		commitDie()
+		return	
 
 ## 实体攻击虚函数
 func handleAttack() -> void:
