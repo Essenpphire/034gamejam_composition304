@@ -7,7 +7,7 @@
 [ext_resource type="PhysicsMaterial" uid="uid://bbvcta7nwoao7" path="res://资源/SwordMat.tres" id="4_gedn7"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_o8tw2"]
-radius = 21.0
+radius = 20.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_2pbv7"]
 radius = 204.978
@@ -38,19 +38,21 @@ position = Vector2(3, 4)
 
 [node name="HurtDot1" parent="Body" instance=ExtResource("3_2pbv7")]
 
+[node name="RayCast2D" type="RayCast2D" parent="Body"]
+position = Vector2(30, 0)
+
 [node name="PinJoint2D" type="PinJoint2D" parent="."]
-position = Vector2(5, 3)
-rotation = 0.418879
+position = Vector2(0, 3)
 node_a = NodePath("..")
 node_b = NodePath("Sword")
+angular_limit_enabled = true
 angular_limit_lower = -0.0872665
 angular_limit_upper = 0.0872665
 
 [node name="Sword" parent="PinJoint2D" instance=ExtResource("3_o8tw2")]
-position = Vector2(-0.00644684, -9.84886)
-mass = 1.0
+position = Vector2(0, -10)
+mass = 0.8
 physics_material_override = ExtResource("4_gedn7")
-freeze = true
 freeze_mode = 1
 
 [node name="Collision" type="CollisionPolygon2D" parent="."]
@@ -58,7 +60,7 @@ visible = false
 polygon = PackedVector2Array(8, 8, 0, -8, -8, 8)
 
 [node name="Attack" type="Area2D" parent="."]
-visible = false
+rotation = -0.0636822
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Attack"]
 shape = SubResource("CircleShape2D_o8tw2")

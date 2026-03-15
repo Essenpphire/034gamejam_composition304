@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://c1kd5xarbr8ph"]
+[gd_scene load_steps=12 format=3 uid="uid://c1kd5xarbr8ph"]
 
 [ext_resource type="StyleBox" uid="uid://dj5jk16v6eypu" path="res://资源/stylebox_round_corlor.tres" id="1_3t7fj"]
 [ext_resource type="PackedScene" uid="uid://d2mfaoe0effwx" path="res://场景/EnemyDummy.tscn" id="2_aycx0"]
@@ -107,9 +107,6 @@ size = Vector2(250, 20)
 
 [sub_resource type="QuadMesh" id="QuadMesh_t54hj"]
 size = Vector2(400, 20)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_jbdaa"]
-size = Vector2(800, 10)
 
 [sub_resource type="PrismMesh" id="PrismMesh_aycx0"]
 size = Vector3(14.4, 72, 1)
@@ -245,17 +242,10 @@ position = Vector2(56, -192)
 position = Vector2(616, 432)
 scale = Vector2(4, 4)
 
-[node name="Platform" type="StaticBody2D" parent="BattleTutor"]
-position = Vector2(576, 472)
-collision_layer = 3
-
-[node name="Mesh" type="MeshInstance2D" parent="BattleTutor/Platform"]
+[node name="Platform2" type="MeshInstance2D" parent="BattleTutor"]
 modulate = Color(0.328165, 0.635204, 0.867397, 1)
+position = Vector2(576, 472)
 mesh = SubResource("QuadMesh_t54hj")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="BattleTutor/Platform"]
-visible = false
-shape = SubResource("RectangleShape2D_jbdaa")
 
 [node name="SwordFake" type="CharacterBody2D" parent="BattleTutor"]
 position = Vector2(529, 462)

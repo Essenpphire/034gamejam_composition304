@@ -1,0 +1,131 @@
+[gd_scene load_steps=8 format=3 uid="uid://imisclflhtca"]
+
+[ext_resource type="Script" uid="uid://5hjlafak0brh" path="res://脚本/BgDraw.gd" id="1_38hpm"]
+[ext_resource type="PackedScene" uid="uid://cj5usopwhfvn4" path="res://场景/Player.tscn" id="2_0rc54"]
+
+[sub_resource type="GDScript" id="GDScript_funst"]
+script/source = "extends Node2D
+
+@onready var EnemyCnt : Node2D = $EnemyCnt
+var enemy_cnt : int
+
+var ENEMY_SCENE : PackedScene = preload(\"res://场景/Enemy.tscn\")
+
+func darwMarkers() -> Array:
+	var markers = []
+	for ep in EnemyCnt.get_children():
+		if ep is Marker2D:
+			markers.append(ep)
+
+	markers.shuffle()
+	return markers.slice(0, 3)
+
+func _physics_process(delta: float) -> void:
+	enemy_cnt = EnemyCnt.get_child_count()
+	if enemy_cnt <= 9:
+		for ep in darwMarkers():
+			if ep is Marker2D:
+				# await get_tree().create_timer(0.5).timeout
+				var enemy = ENEMY_SCENE.instantiate()
+				enemy.position = ep.position
+				EnemyCnt.add_child(enemy)
+"
+
+[sub_resource type="QuadMesh" id="QuadMesh_ruq6v"]
+size = Vector2(250, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_x60bs"]
+size = Vector2(250, 20)
+
+[sub_resource type="QuadMesh" id="QuadMesh_32qfh"]
+size = Vector2(400, 10)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_eirmd"]
+size = Vector2(400, 10)
+
+[node name="StageEndless" type="Node2D"]
+script = SubResource("GDScript_funst")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -1500.0
+offset_top = -1500.0
+offset_right = 1500.0
+offset_bottom = 1500.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="ColorRect" type="ColorRect" parent="Control"]
+z_index = 114
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 0, 0, 0.0784314)
+
+[node name="Background" type="Node2D" parent="."]
+script = ExtResource("1_38hpm")
+
+[node name="Player" parent="." instance=ExtResource("2_0rc54")]
+position = Vector2(590, 274)
+
+[node name="Platform3" type="StaticBody2D" parent="." groups=["Platform"]]
+position = Vector2(872, 544)
+collision_layer = 3
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="Platform3"]
+modulate = Color(0.0392157, 0.160784, 0.247059, 1)
+mesh = SubResource("QuadMesh_ruq6v")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform3"]
+shape = SubResource("RectangleShape2D_x60bs")
+
+[node name="Platform2" type="StaticBody2D" parent="." groups=["Platform"]]
+position = Vector2(160, 546)
+collision_layer = 3
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="Platform2"]
+modulate = Color(0.0392157, 0.160784, 0.247059, 1)
+mesh = SubResource("QuadMesh_ruq6v")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform2"]
+shape = SubResource("RectangleShape2D_x60bs")
+
+[node name="Platform" type="StaticBody2D" parent="." groups=["Platform"]]
+position = Vector2(528, 576)
+collision_layer = 3
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="Platform"]
+modulate = Color(0.0392157, 0.160784, 0.247059, 1)
+mesh = SubResource("QuadMesh_32qfh")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform"]
+shape = SubResource("RectangleShape2D_eirmd")
+
+[node name="EnemyCnt" type="Node2D" parent="."]
+
+[node name="Marker2D" type="Marker2D" parent="EnemyCnt"]
+position = Vector2(96, 520)
+
+[node name="Marker2D2" type="Marker2D" parent="EnemyCnt"]
+position = Vector2(208, 520)
+
+[node name="Marker2D3" type="Marker2D" parent="EnemyCnt"]
+position = Vector2(408, 556)
+
+[node name="Marker2D4" type="Marker2D" parent="EnemyCnt"]
+position = Vector2(568, 554)
+
+[node name="Marker2D5" type="Marker2D" parent="EnemyCnt"]
+position = Vector2(856, 520)
+
+[node name="Marker2D6" type="Marker2D" parent="EnemyCnt"]
+position = Vector2(944, 520)

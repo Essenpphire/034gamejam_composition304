@@ -19,6 +19,10 @@ config/icon="res://icon.svg"
 
 GameManager="*res://脚本/GameManager.gd"
 
+[display]
+
+window/stretch/mode="canvas_items"
+
 [input]
 
 "向上移动"={

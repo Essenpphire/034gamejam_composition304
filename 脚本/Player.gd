@@ -13,15 +13,11 @@ var is_hurting : bool = false
 func handleRespawn() -> void:
 	if not is_dead:
 		return
-	if not GameManager.is_tutor_death_played:
-		get_parent().add_child(GameManager.UI_RESPAWN_SCENE.instantiate())
-		
-	else:
-		if Input.is_action_just_pressed("跳跃"):
-			print("复活吧我的爱人！")
-			is_dead = false
-			GameManager.is_game_start = false
-			GameManager.changeScene("res://场景/StartScene.tscn")
+	if Input.is_action_just_pressed("跳跃"):
+		print("复活吧我的爱人！")
+		is_dead = false
+		#GameManager.is_game_start = false
+		GameManager.changeScene("res://场景/StartScene.tscn")
 
 ## 玩家受伤
 func receiveDamage(damage : float) -> void:
@@ -30,6 +26,11 @@ func receiveDamage(damage : float) -> void:
 	self.HP -= damage
 	Body.modulate.a = HP / FULL_HP
 	is_hurting = false
+
+## @override 玩家死亡
+func commitDie() -> void:
+	super.commitDie()
+	GameManager.battle_player_dead.emit()
 
 ## @override 玩家移动
 func handleMove() -> void:
@@ -43,48 +44,48 @@ func handleMove() -> void:
 	if direction:
 		facing = direction
 		# 这就解决朝向问题了
-		self.transform.x = Vector2(direction, 0)
+		# self.transform.x = Vector2(direction, 0)
 		create_tween().tween_property(Body, "transform:x", Vector2(direction, 0), 0.2)
-		velocity.x = direction * SPEED
-		if direction == 1.0:
+		self.velocity.x = direction * SPEED
+		if facing == 1.0:
 			Joint.angular_limit_upper = deg_to_rad(60)
-			Joint.angular_limit_lower = deg_to_rad(20)
-		elif direction == -1.0:
-			Joint.angular_limit_upper = deg_to_rad(-30)
+			Joint.angular_limit_lower = deg_to_rad(-60)
+		elif facing == -1.0:
+			Joint.angular_limit_upper = deg_to_rad(60)
 			Joint.angular_limit_lower = deg_to_rad(-60)
 		Sword.apply_torque(facing * 10000)
 	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
+		self.velocity.x = move_toward(velocity.x, 0, SPEED)
 		
 	if self.is_on_floor():
 		if Input.is_action_just_pressed("跳跃"):
-			velocity.y = JUMP_VELOCITY
+			self.velocity.y = JUMP_VELOCITY
 
 ## @override 玩家攻击
 # 我写的什么狗屎判断
-#var _prev_col_bodies : Array = []
-#var _b1 = null
-#var _b2 = null
+var _prev_col_bodies : Array = []
+var _b1 = null
+var _b2 = null
 
 func handleAttack() -> void:
 	if not Sword.get_colliding_bodies().is_empty():
 		if not Sword.get_colliding_bodies()[0].is_in_group("Platform"):
 			GameManager.cameraShake(10)
-	#if _prev_col_bodies.is_empty():
-		#_b1 = null
-	#else:
-		#_b1 = _prev_col_bodies[0].name
-	#
-	#if Sword.get_colliding_bodies().is_empty():
-		#_b2 = null
-	#else:
-		#_b2 = Sword.get_colliding_bodies()[0].name
-	#
-	#if _b1 != _b2:
-		#GameManager.cameraShake(10)
-	#_prev_col_bodies = Sword.get_colliding_bodies()
+	if _prev_col_bodies.is_empty():
+		_b1 = null
+	else:
+		_b1 = _prev_col_bodies[0].name
 	
-	if Input.is_action_pressed("攻击"):
+	if Sword.get_colliding_bodies().is_empty():
+		_b2 = null
+	else:
+		_b2 = Sword.get_colliding_bodies()[0].name
+	
+	if _b1 != _b2:
+		GameManager.cameraShake(10)
+	_prev_col_bodies = Sword.get_colliding_bodies()
+	
+	if Input.is_action_pressed("攻击") and self.is_on_floor():
 		#can_attack = false
 		Joint.angular_limit_enabled = false
 		Sword.freeze = false
@@ -107,9 +108,6 @@ func handleAttack() -> void:
 
 ## @override 落地回调函数
 func handleHitFloor() -> void:
-	if not GameManager.is_game_start:
-		GameManager.gameStart()
-		get_parent().add_child(GameManager.UI_TUTORIAL_SCENE.instantiate())
 	Sword.apply_torque(facing * 5000)
 
 ## 物理模拟
@@ -134,8 +132,6 @@ func _on_hitdot_body_entered(body : Node2D, idx : int) -> void:
 			receiveDamage(1.0)
 			if HP <= 0:
 				commitDie()
-				# 防止敌人鞭尸
-				self.remove_from_group("Player")
 		
 ## 判定点回调 - 剑离开
 func _on_hitdot_body_exited(body : Node2D, idx : int) -> void:

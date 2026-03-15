@@ -52,12 +52,14 @@ func commitDie() -> void:
 	Sword.apply_force(get_gravity())
 	# 拜拜碰撞
 	Collision.queue_free()
-	# 死亡特效，Particle是对的
+	# 死亡特效，Particle和慢动作是对的
+	Engine.time_scale = 0.1
 	$DeathParticle.emitting = true
 	# 清点
 	queue_redraw()
 	var _dead_tween = create_tween()
 	_dead_tween.tween_property(Body, "modulate:a", 0, 0.1)
+	Engine.time_scale = 1.0
 
 ## 落地回调函数
 func handleHitFloor() -> void:
@@ -86,7 +88,7 @@ func _draw() -> void:
 		draw_line(HurtDot0.position, HurtDot1.position, STYLE.hurtdot_hurt, 2.0)
 
 
-## 物理帧更新函数
+## 物理帧更新
 func _physics_process(delta: float) -> void:
 	if prev_on_floor != is_on_floor() and is_on_floor():
 		print(self.name + "落地！") # do sth...

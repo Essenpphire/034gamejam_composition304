@@ -6,23 +6,18 @@
 script/source = "extends CanvasLayer
 
 ## 模拟按键
-func pressKey(key : Panel, t : float = 1.0) -> void:
+func pressKey(key : Panel, t : float = 0.5) -> void:
 	create_tween().tween_property(key, \"modulate\", Color.GREEN, 0.1)
 	await get_tree().create_timer(t).timeout
 	create_tween().tween_property(key, \"modulate\", Color.WHITE, 0.1)
 
 func _ready() -> void:
 	$Control.modulate.a = 0.0
-	await get_tree().create_timer(1.0).timeout
-	
 	create_tween().tween_property($Control, \"modulate:a\", 1.0, 0.5)
 	await get_tree().create_timer(0.5).timeout
 	pressKey($Control/Keyboard/Space)
-	await get_tree().create_timer(2.0).timeout
+	await get_tree().create_timer(1.0).timeout
 	pressKey($Control/Keyboard/Space)
-	await get_tree().create_timer(2.0).timeout
-	create_tween().tween_property($Control, \"modulate:a\", 0.0, 0.5)
-	
 	await get_tree().create_timer(1.0).timeout
 	create_tween().tween_property($Control, \"modulate:a\", 0.0, 0.5)
 	GameManager.is_tutor_death_played = true
@@ -33,9 +28,11 @@ script = SubResource("GDScript_wwcpk")
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 1152.0
-offset_bottom = 648.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Keyboard" type="Control" parent="Control"]
 anchors_preset = 0

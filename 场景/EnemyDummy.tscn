@@ -37,6 +37,10 @@ func _ready() -> void:
 	HurtDot1.body_entered.connect(_on_hitdot_body_entered.bind(1))
 	HurtDot1.body_exited.connect(_on_hitdot_body_exited.bind(1))
 
+## @override 物理帧更新函数
+func _physics_process(delta: float) -> void:
+	pass
+
 ## 判定点回调 - 剑砍入
 func _on_hitdot_body_entered(body : Node2D, idx : int) -> void:
 	if body.is_in_group(\"PlayerSword\"):
